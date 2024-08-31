@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  username           String               @unique
+  email              String               @unique
+  password           String
+  walletAddress      String               @unique
+  privateKey         String               @unique
+  iv                 String               @unique
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  avatarUrl          String?
+
+  kycVerification    KYCVerification?     // Relation defined without fields or references
+  transactions       Transaction[]
+  contacts           Contact[]
+}
+
+
+model KYCVerification {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime?
+  phoneNumber       String?  @unique
+  address           String?
+  city              String?
+  stateOrProvince   String?
+  postalOrZipCode   String?  // Unified field for both postal and ZIP codes
+  country           String?
+  ssnOrSin          String?  @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+
+model Transaction {
+  id                    Int                @id @default(autoincrement())
+  userId                Int
+  transactionType       String
+  amount                Float
+  message               String?
+  timestamp             DateTime           @default(now())
+
+  user                  User               @relation(fields: [userId], references: [id])
+}
+
+model Contact {
+  id                    Int                @id @default(autoincrement())
+  userId                Int
+  contactUsername       String
+  contactWalletAddress  String
+  isFavorite            Boolean            @default(false)
+  createdAt             DateTime           @default(now())
+
+  user                  User               @relation(fields: [userId], references: [id])
+}
+
